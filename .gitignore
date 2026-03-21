@@ -5,3 +5,4 @@ __pycache__/
 sentinel.db
 scan_log.txt
 *.bak
+*.key
