@@ -1,0 +1,131 @@
+sectors:
+  GPU_CHIPS:
+    US:
+      - name: "TSMC Quarterly Earnings Transcript"
+        url: "https://investor.tsmc.com"
+        type: transcript
+        refresh: quarterly
+      - name: "SemiAnalysis CoWoS Tracker"
+        url: "https://semianalysis.com"
+        type: industry_report
+        refresh: weekly
+    CN:
+      - name: "SMIC Announcements"
+        url: "https://www.smics.com"
+        type: corporate_filing
+        refresh: quarterly
+      - name: "Hua Hong Semi Earnings"
+        url: "https://www.huahonggrace.com"
+        type: corporate_filing
+        refresh: quarterly
+  DATA_CENTERS:
+    US:
+      - name: "FERC eLibrary"
+        url: "https://elibrary.ferc.gov/eLibrary/search"
+        type: regulatory_filing
+        refresh: weekly
+      - name: "Datacenter Dynamics"
+        url: "https://www.datacenterdynamics.com"
+        type: industry_news
+        refresh: daily
+    CN:
+      - name: "China Bidding"
+        url: "https://www.chinabidding.com"
+        type: public_tender
+        refresh: daily
+      - name: "MIIT Datacenter Policies"
+        url: "https://www.miit.gov.cn"
+        type: government_policy
+        refresh: monthly
+  POWER_ENERGY:
+    US:
+      - name: "PJM Structured API"
+        url: "https://api.pjm.com/api/v1/"
+        type: api_data
+        refresh: daily
+      - name: "EIA Grid API"
+        url: "https://api.eia.gov/v2/electricity/"
+        type: api_data
+        refresh: daily
+      - name: "PJM Interconnection Queue"
+        url: "https://pjm.com/planning/services-requests/interconnection-queues.aspx"
+        type: grid_data
+        refresh: weekly
+      - name: "EIA Grid Monitor"
+        url: "https://www.eia.gov/electricity/gridmonitor/"
+        type: grid_data
+        refresh: daily
+    CN:
+      - name: "National Energy Administration"
+        url: "http://www.nea.gov.cn"
+        type: government_policy
+        refresh: monthly
+      - name: "Beijing Power Exchange"
+        url: "https://www.bjpx.com.cn" # TODO
+        type: market_data
+        refresh: daily
+  CLOUD_COMPUTE:
+    US:
+      - name: "FRED Tech CapEx API"
+        url: "https://api.stlouisfed.org/fred/series/observations"
+        type: api_data
+        refresh: daily
+      - name: "SF Compute Pricing"
+        url: "https://sfcompute.com" 
+        type: market_data
+        refresh: daily
+      - name: "Vast.ai Market"
+        url: "https://vast.ai/console/create"
+        type: market_data
+        refresh: daily
+    CN:
+      - name: "Alibaba Cloud Pricing"
+        url: "https://www.aliyun.com"
+        type: market_data
+        refresh: daily
+      - name: "Huawei Cloud Announcements"
+        url: "https://www.huaweicloud.com"
+        type: market_data
+        refresh: weekly
+  COOLING_INFRA:
+    US:
+      - name: "EPA Water Data"
+        url: "https://www.epa.gov/waterdata"
+        type: public_data
+        refresh: monthly
+      - name: "Vertiv Earnings"
+        url: "https://investors.vertiv.com"
+        type: corporate_filing
+        refresh: quarterly
+    CN:
+      - name: "Sugon Liquid Cooling"
+        url: "https://www.sugon.com" # TODO
+        type: corporate_filing
+        refresh: quarterly
+      - name: "China Public Tenders - Cooling"
+        url: "http://www.ccgp.gov.cn/" 
+        type: public_tender
+        refresh: weekly
+  POLICY:
+    US:
+      - name: "Federal Register API"
+        url: "https://www.federalregister.gov/api/v1/documents"
+        type: api_data
+        refresh: daily
+      - name: "BIS Export Controls"
+        url: "https://www.bis.doc.gov"
+        type: government_policy
+        refresh: weekly
+      - name: "Congress.gov AI Legislation"
+        url: "https://www.congress.gov"
+        type: government_policy
+        refresh: daily
+    CN:
+      - name: "State Council Announcements"
+        url: "https://english.www.gov.cn"
+        type: government_policy
+        refresh: weekly
+      - name: "MIIT Industry Guidelines"
+        url: "https://www.miit.gov.cn"
+        type: government_policy
+        refresh: weekly

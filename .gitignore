@@ -1,0 +1,7 @@
+﻿.env
+__pycache__/
+*.pyc
+.streamlit/
+sentinel.db
+scan_log.txt
+*.bak

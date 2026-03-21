@@ -1,0 +1,12 @@
+pydantic>=2.0
+httpx
+psycopg[binary]
+openai
+anthropic
+streamlit
+plotly
+python-dotenv
+apscheduler
+pyyaml
+pytest
+pytest-asyncio

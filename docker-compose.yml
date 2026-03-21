@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel
+      POSTGRES_DB: sentinel
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./data/init_schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sentinel']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  sentinel-scanner:
+    build: .
+    command: python orchestrator.py
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://sentinel:sentinel@postgres:5432/sentinel
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  sentinel-dashboard:
+    build: .
+    command: streamlit run dashboard/app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - '8501:8501'
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://sentinel:sentinel@postgres:5432/sentinel
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

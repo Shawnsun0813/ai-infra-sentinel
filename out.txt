@@ -1,0 +1,66 @@
+C:\Users\archi\OneDrive\Desktop\Winter Project\Multi_agent\6_AI Infra Sentinel\orchestrator.py:7: DeprecationWarning: 'asyncio.WindowsSelectorEventLoopPolicy' is deprecated and slated for removal in Python 3.16
+  asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+C:\Users\archi\OneDrive\Desktop\Winter Project\Multi_agent\6_AI Infra Sentinel\orchestrator.py:7: DeprecationWarning: 'asyncio.set_event_loop_policy' is deprecated and slated for removal in Python 3.16
+  asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+Traceback (most recent call last):
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\selector_events.py", line 1009, in _read_ready__data_received
+    data = self._sock.recv(self.max_size)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\archi\OneDrive\Desktop\Winter Project\Multi_agent\6_AI Infra Sentinel\orchestrator.py", line 102, in <module>
+    if __name__ == '__main__':
+        ^^^^^^
+  File "C:\Users\archi\OneDrive\Desktop\Winter Project\Multi_agent\6_AI Infra Sentinel\orchestrator.py", line 95, in main
+    """Entry point for the daily orchestration."""
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\archi\OneDrive\Desktop\Winter Project\Multi_agent\6_AI Infra Sentinel\orchestrator.py", line 35, in daily_scan
+    # Step 1: Initialize DB
+  File "C:\Users\archi\OneDrive\Desktop\Winter Project\Multi_agent\6_AI Infra Sentinel\data\db.py", line 26, in init_db
+    pool = await get_pool()
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\archi\OneDrive\Desktop\Winter Project\Multi_agent\6_AI Infra Sentinel\data\db.py", line 16, in get_pool
+    _pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10, ssl=False)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\asyncpg\pool.py", line 439, in _async__init__
+    await self._initialize()
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\asyncpg\pool.py", line 466, in _initialize
+    await first_ch.connect()
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\asyncpg\pool.py", line 153, in connect
+    self._con = await self._pool._get_new_connection()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\asyncpg\pool.py", line 538, in _get_new_connection
+    con = await self._connect(
+          ^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\asyncpg\connection.py", line 2443, in connect
+    return await connect_utils._connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<22 lines>...
+    )
+    ^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\asyncpg\connect_utils.py", line 1218, in _connect
+    conn = await _connect_addr(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\asyncpg\connect_utils.py", line 1050, in _connect_addr
+    return await __connect_addr(params, False, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\archi\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\asyncpg\connect_utils.py", line 1102, in __connect_addr
+    await connected
+asyncpg.exceptions.ConnectionDoesNotExistError: connection was closed in the middle of operation
