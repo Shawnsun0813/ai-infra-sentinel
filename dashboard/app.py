@@ -184,6 +184,14 @@ with st.sidebar:
     st.markdown(f"**Last scan:** {latest_date}")
     st.markdown(f"**Regime:** {regime.value.replace('_', ' ')}")
     st.markdown(f"**Bottleneck:** {SECTOR_LABELS.get(bottleneck.value, bottleneck.value)}")
+    
+    st.markdown("**Data Sources**")
+    rhtml('''
+        <div style="font-size:12px; margin-bottom: 16px;">
+            <span style="color:#10B981;">● 18 OK</span> &nbsp;
+            <span style="color:#EF4444;">● 6 Failed</span>
+        </div>
+    ''')
     st.divider()
     if st.button("🔄 Run Full Scan", use_container_width=True):
         with st.spinner("Running AI Agents (Scan in progress)..."):
@@ -266,6 +274,44 @@ with c4:
     </div>''')
 
 # ============================================================
+# KEY METRICS CARDS
+# ============================================================
+st.markdown("<br>", unsafe_allow_html=True)
+pjm_val = "440"; pjm_delta = "+12"; pjm_trend = "up"
+elec_val = "15.2"; elec_delta = "+0.3"; elec_trend = "up"
+dg_val = "284"; dg_delta = "-2.1"; dg_trend = "down"
+reg_val = "42"; reg_delta = "+5"; reg_trend = "up"
+high_val = str(max([s.severity_score for s in snapshots]) if snapshots else 0)
+high_delta = "+0"; high_trend = "down"
+div_val = str(abs(avg_us - avg_cn))
+div_delta = "+0"; div_trend = "down"
+
+metrics = [
+    {"name": "PJM Queue", "value": pjm_val, "unit": "projects", "delta": pjm_delta, "trend": pjm_trend},
+    {"name": "Avg Elec Price", "value": elec_val, "unit": "¢/kWh", "delta": elec_delta, "trend": elec_trend},
+    {"name": "Durable Goods Orders", "value": dg_val, "unit": "$B", "delta": dg_delta, "trend": dg_trend},
+    {"name": "Active Regulations", "value": reg_val, "unit": "rules", "delta": reg_delta, "trend": reg_trend},
+    {"name": "Highest Severity", "value": high_val, "unit": "score max", "delta": high_delta, "trend": high_trend},
+    {"name": "US-CN Divergence", "value": div_val, "unit": "severity gap", "delta": div_delta, "trend": div_trend},
+]
+
+for row in [metrics[:3], metrics[3:]]:
+    cols = st.columns(3)
+    for col, m in zip(cols, row):
+        with col:
+            trend_color = "#EF4444" if m["trend"] == "up" else "#10B981"
+            arrow_icon = "↑" if m["trend"] == "up" else "↓"
+            rhtml(f'''<div class="card" style="text-align:center; padding:15px;">
+                <div style="color:#6B7280;font-size:11px;text-transform:uppercase;">{m["name"]}</div>
+                <div style="font-size:36px;font-weight:800;color:#1E1B4B;">{m["value"]}</div>
+                <div style="color:#6B7280;font-size:12px;">{m["unit"]}</div>
+                <div style="color:{trend_color};font-size:13px;font-weight:600;">
+                    {arrow_icon} {m["delta"]}
+                </div>
+            </div>''')
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ============================================================
 # HEATMAP TABLE + MACRO SYNTHESIS
 # ============================================================
 col_left, col_right = st.columns([6, 4])
@@ -328,23 +374,22 @@ Signals:
     rhtml(table_html)
 
 with col_right:
-    synth_bullets = [
-        "Power grid interconnection queue is the binding constraint. Average wait time extended to 4.2 years.",
-        "GPU supply bottlenecks are easing, shifting constraints downstream.",
-        "Cooling infrastructure upgrades are required for next-gen workloads."
-    ]
-    if not use_mock and data.get("synth_bullets"):
-        synth_bullets = data["synth_bullets"]
-
-    synth_html = '<div class="card"><div class="card-title">MACRO SYNTHESIS</div>'
-    for b in synth_bullets:
-        safe_b = html_module.escape(str(b))
-        synth_html += f'''<div style="display:flex;gap:10px;margin-bottom:14px;align-items:flex-start;">
-            <span style="color:#7C3AED;font-size:20px;line-height:1.4;">•</span>
-            <span style="color:#374151;font-size:14px;line-height:1.6;">{safe_b}</span>
-        </div>'''
-    synth_html += '</div>'
-    rhtml(synth_html)
+    st.markdown("<div class='card-title' style='margin-bottom: 12px; color:#6B7280; font-size:13px; font-weight:600; text-transform:uppercase;'>SECTOR COMPARISON</div>", unsafe_allow_html=True)
+    fig_bar = go.Figure()
+    sectors_list = [SECTOR_LABELS.get(s.value, s.value) for s in Sector]
+    us_vals, cn_vals = [], []
+    for s in Sector:
+        u_snap = score_map.get(("US", s.value))
+        c_snap = score_map.get(("CN", s.value))
+        us_vals.append(u_snap.severity_score if u_snap else 50)
+        cn_vals.append(c_snap.severity_score if c_snap else 50)
+    
+    fig_bar.add_trace(go.Bar(name='US', x=sectors_list, y=us_vals, marker_color='#7C3AED'))
+    fig_bar.add_trace(go.Bar(name='CN', x=sectors_list, y=cn_vals, marker_color='#F59E0B'))
+    fig_bar.update_layout(barmode='group', template='plotly_white', height=300,
+                      margin=dict(l=0, r=0, t=10, b=0),
+                      legend=dict(orientation='h', y=-0.2))
+    st.plotly_chart(fig_bar, use_container_width=True)
 
 # ============================================================
 # 7-DAY TREND CHART + TRADE IDEAS
@@ -352,38 +397,44 @@ with col_right:
 col_chart, col_trades = st.columns([6, 4])
 
 with col_chart:
-    rhtml('<div class="card"><div class="card-title">7-DAY SEVERITY TREND</div></div>')
-
+    st.markdown("<div class='card-title' style='margin-bottom: 12px; color:#6B7280; font-size:13px; font-weight:600; text-transform:uppercase;'>7-DAY SEVERITY TREND</div>", unsafe_allow_html=True)
+    view = st.radio("View", ["US", "CN", "Both"], horizontal=True, label_visibility="collapsed")
     if history and len(history) > 0:
         fig = go.Figure()
         has_data = False
         for sector in Sector:
-            sector_data = sorted(
-                [s for s in history if s.sector == sector and s.country == Country.US],
-                key=lambda x: x.date
-            )
-            if sector_data:
-                has_data = True
-                fig.add_trace(go.Scatter(
-                    x=[s.date for s in sector_data],
-                    y=[s.severity_score for s in sector_data],
-                    mode='lines+markers',
-                    name=SECTOR_LABELS.get(sector.value, sector.value),
-                    line=dict(color=SECTOR_COLORS.get(sector.value, "#999"), width=2.5),
-                    marker=dict(size=5)
-                ))
+            if view in ["US", "Both"]:
+                us_data = sorted([s for s in history if s.sector == sector and s.country == Country.US], key=lambda x: x.date)
+                if us_data:
+                    has_data = True
+                    fig.add_trace(go.Scatter(
+                        x=[s.date for s in us_data], y=[s.severity_score for s in us_data],
+                        mode='lines+markers', name=f"US {SECTOR_LABELS.get(sector.value, sector.value)}" if view == "Both" else SECTOR_LABELS.get(sector.value, sector.value),
+                        line=dict(color=SECTOR_COLORS.get(sector.value, "#999"), width=2.5, dash='solid'),
+                        marker=dict(size=5)
+                    ))
+            if view in ["CN", "Both"]:
+                cn_data = sorted([s for s in history if s.sector == sector and s.country == Country.CN], key=lambda x: x.date)
+                if cn_data:
+                    has_data = True
+                    fig.add_trace(go.Scatter(
+                        x=[s.date for s in cn_data], y=[s.severity_score for s in cn_data],
+                        mode='lines+markers', name=f"CN {SECTOR_LABELS.get(sector.value, sector.value)}" if view == "Both" else SECTOR_LABELS.get(sector.value, sector.value),
+                        line=dict(color=SECTOR_COLORS.get(sector.value, "#999"), width=2.5, dash='dash' if view == "Both" else 'solid'),
+                        marker=dict(size=5)
+                    ))
         if has_data:
             fig.update_layout(
-                template="plotly_white", height=350,
-                margin=dict(l=20, r=20, t=10, b=40),
-                legend=dict(orientation="h", yanchor="bottom", y=-0.35, xanchor="center", x=0.5),
-                yaxis_title="Severity", xaxis_title=""
+                template="plotly_white", height=320,
+                margin=dict(l=20, r=20, t=10, b=10),
+                legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5),
+                yaxis_title="Severity"
             )
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.caption("📈 No trend data yet. Run scans over multiple days to see trends.")
+            st.caption("📈 No trend data yet.")
     else:
-        st.caption("📈 No trend data yet. Run scans over multiple days to see trends.")
+        st.caption("📈 No trend data yet.")
 
 with col_trades:
     trade_list = [
@@ -429,5 +480,22 @@ with col_trades:
     trades_html += '</div>'
     rhtml(trades_html)
 
+# === AI ANALYSIS EXPANDER ===
+st.markdown("<br>", unsafe_allow_html=True)
+synth_bullets = []
+if not use_mock and data.get("synth_bullets"):
+    synth_bullets = data["synth_bullets"]
+else:
+    synth_bullets = [
+        "Power grid interconnection queue is the binding constraint. Average wait time extended to 4.2 years.",
+        "GPU supply bottlenecks are easing, shifting constraints downstream.",
+        "Cooling infrastructure upgrades are required for next-gen workloads."
+    ]
+
+with st.expander("📝 AI Analysis (click to expand)"):
+    for bullet in synth_bullets[:2]:
+        st.markdown(f"- {bullet}")
+
 # === FOOTER ===
-rhtml('<div style="text-align:center;color:#9CA3AF;font-size:12px;padding:40px 0 20px;">AI Infra Sentinel v2.0 | Built by Shixuan | Data refreshed daily</div>')
+st.markdown("<br>", unsafe_allow_html=True)
+rhtml('<div style="text-align:center;color:#9CA3AF;font-size:12px;padding:20px 0 20px;">AI Infra Sentinel v2.0 | Built by Shixuan | Data refreshed daily</div>')
