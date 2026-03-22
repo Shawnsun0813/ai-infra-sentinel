@@ -20,8 +20,8 @@ def rhtml(content):
 
 # === CSS ===
 rhtml("""<style>
-    .stApp { background-color: #F5F3FF; font-family: 'Inter', -apple-system, sans-serif; }
-    .block-container { padding-top: 2rem !important; }
+    .stApp { padding-top: 0; background-color: #F5F3FF; font-family: 'Inter', -apple-system, sans-serif; }
+    .block-container { padding-top: 1rem !important; }
     .card {
         background: #FFFFFF; border-radius: 16px; border: 1px solid #EDE9FE;
         padding: 20px; box-shadow: 0 2px 8px rgba(139,92,246,0.08);
