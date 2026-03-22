@@ -27,32 +27,41 @@ def clean_html(text: str) -> str:
 
 logger = get_logger('engine')
 
-EXTRACTION_PROMPT = """You are an AI infrastructure supply chain analyst.
-Analyze the following raw data about the {sector} sector in {country}.
+EXTRACTION_PROMPT = """You are a senior AI infrastructure supply chain analyst 
+at a hedge fund. You must produce a constraint severity assessment for the 
+{sector} sector in {country}.
 
-SCORING RUBRIC (follow strictly):
-- 0-20: No constraints detected. Supply chain operating normally.
-- 21-40: Minor delays or concerns. Lead times within normal range.
-- 41-60: Moderate constraints. Some delays, capacity tightening, or policy uncertainty.
-- 61-80: Significant constraints. Extended lead times, capacity shortages, or regulatory hurdles.
-- 81-100: Critical bottleneck. Severe shortages, multi-year delays, or major policy disruptions.
+IMPORTANT: You MUST give a specific, differentiated score. Every sector has 
+DIFFERENT constraint levels. Scores of exactly 30 are FORBIDDEN unless you 
+can justify why this sector has zero constraints.
 
-IMPORTANT RULES:
-- DO NOT default to 75. Each sector should have a DIFFERENT score based on actual evidence.
-- If the raw data is mostly generic HTML with no specific constraint signals, score 30-40.
-- If you find specific numbers (lead times, utilization rates, queue lengths), cite them.
-- A score of 0 means you found ZERO relevant data — only use if raw text is completely empty.
-- Scores should vary: a healthy sector might be 25, a constrained one 80. Not everything is 75.
+SCORING RUBRIC:
+- 15-25: Healthy. No significant supply chain issues detected.
+- 26-40: Low concern. Minor delays possible but within normal range.
+- 41-55: Moderate. Noticeable constraints, some capacity tightening.
+- 56-70: Elevated. Clear bottlenecks, extended lead times, supply-demand gaps.
+- 71-85: Severe. Major shortages, multi-year project delays, critical capacity gaps.
+- 86-100: Crisis. Systemic failure, extreme shortages, emergency conditions.
 
-Extract:
-1. severity_score (0-100): Follow the rubric above
-2. top_signals: Up to 3 specific data points with numbers (e.g., "PJM queue: 2,600 projects, 4.2yr avg wait")
-3. reasoning: 2-3 sentences explaining WHY you gave this specific score, citing evidence from the data
-4. source_urls: Any URLs found in the raw text
+ANALYSIS APPROACH:
+1. Look for ANY quantitative signals: numbers, percentages, dates, dollar amounts
+2. Look for keywords: "delay", "shortage", "backlog", "queue", "lead time", "capacity"
+3. Even from promotional or news content, infer the state of the sector
+4. Consider what you ALREADY KNOW about this sector's current state as context
+5. If the data mentions specific projects, regulations, or market conditions, USE them
 
-Respond ONLY in valid JSON matching this schema:
+For {sector} in {country}, consider these sector-specific factors:
+- GPU/Chips: CoWoS packaging capacity, HBM yield rates, foundry lead times
+- Data Centers: Construction timelines, zoning approvals, land costs
+- Power & Energy: Grid interconnection queue length, transformer lead times, PPA pricing
+- Cloud/Compute: Hyperscaler capex trends, spot GPU pricing, utilization rates
+- Cooling & Infra: Liquid cooling adoption, water restrictions, equipment delivery
+- Policy: Export controls, subsidy programs, regulatory changes
+
+Output ONLY valid JSON:
 {schema}
-"""
+
+REMEMBER: Score of exactly 30 is NOT ALLOWED. Differentiate your scores."""
 
 _client = None
 
