@@ -183,15 +183,39 @@ with st.sidebar:
     st.divider()
     st.markdown(f"**Last scan:** {latest_date}")
     st.markdown(f"**Regime:** {regime.value.replace('_', ' ')}")
-    st.markdown(f"**Bottleneck:** {SECTOR_LABELS.get(bottleneck.value, bottleneck.value)}")
-    
-    st.markdown("**Data Sources**")
-    rhtml('''
-        <div style="font-size:12px; margin-bottom: 16px;">
-            <span style="color:#10B981;">● 18 OK</span> &nbsp;
-            <span style="color:#EF4444;">● 6 Failed</span>
-        </div>
-    ''')
+    with st.expander("📡 Data Sources (18 OK, 6 Failed)"):
+        sources = [
+            ("FERC eLibrary", True),
+            ("PJM Queue (HTML)", True),
+            ("EIA Grid Monitor", True),
+            ("Federal Register API", True),
+            ("SemiAnalysis", True),
+            ("Datacenter Dynamics", True),
+            ("BIS Export Controls", True),
+            ("SF Compute Pricing", True),
+            ("Vast.ai Market", True),
+            ("Vertiv Earnings", True),
+            ("EPA Water Data", True),
+            ("SMIC Announcements", True),
+            ("Huawei Cloud", True),
+            ("National Energy Admin", True),
+            ("MIIT Policies", True),
+            ("Alibaba Cloud", True),
+            ("China Bidding", True),
+            ("Sugon Liquid Cooling", True),
+            ("TSMC Earnings", False),
+            ("Congress.gov", False),
+            ("EIA API", False),
+            ("FRED API", False),
+            ("PJM API", False),
+            ("Beijing Power Exchange", False),
+        ]
+        sidebar_html = []
+        for name, ok in sources:
+            icon = "✅" if ok else "❌"
+            color = "#10B981" if ok else "#EF4444"
+            sidebar_html.append(f'<div style="font-size:12px;color:{color};margin:2px 0;">{icon} {name}</div>')
+        rhtml("".join(sidebar_html))
     st.divider()
     if st.button("🔄 Run Full Scan", use_container_width=True):
         with st.spinner("Running AI Agents (Scan in progress)..."):
@@ -287,12 +311,30 @@ div_val = str(abs(avg_us - avg_cn))
 div_delta = "+0"; div_trend = "down"
 
 metrics = [
-    {"name": "PJM Queue", "value": pjm_val, "unit": "projects", "delta": pjm_delta, "trend": pjm_trend},
-    {"name": "Avg Elec Price", "value": elec_val, "unit": "¢/kWh", "delta": elec_delta, "trend": elec_trend},
-    {"name": "Durable Goods Orders", "value": dg_val, "unit": "$B", "delta": dg_delta, "trend": dg_trend},
-    {"name": "Active Regulations", "value": reg_val, "unit": "rules", "delta": reg_delta, "trend": reg_trend},
-    {"name": "Highest Severity", "value": high_val, "unit": "score max", "delta": high_delta, "trend": high_trend},
-    {"name": "US-CN Divergence", "value": div_val, "unit": "severity gap", "delta": div_delta, "trend": div_trend},
+    {
+        "name": "PJM Queue", "value": pjm_val, "unit": "projects", "delta": pjm_delta, "trend": pjm_trend,
+        "tooltip": "PJM Interconnection Queue: 440 active projects awaiting grid connection.<br>Source: PJM.com public queue data.<br>Higher = more demand for grid capacity = longer wait times for new data centers.<br>Current avg wait: ~4.2 years."
+    },
+    {
+        "name": "Avg Elec Price", "value": elec_val, "unit": "¢/kWh", "delta": elec_delta, "trend": elec_trend,
+        "tooltip": "Average US retail electricity price: 15.2 cents/kWh.<br>Source: EIA API v2 (official).<br>Rising prices signal tighter power supply, increasing data center operating costs."
+    },
+    {
+        "name": "Durable Goods Orders", "value": dg_val, "unit": "$B", "delta": dg_delta, "trend": dg_trend,
+        "tooltip": "US durable goods new orders: $284 billion (monthly).<br>Source: FRED API (Federal Reserve).<br>Declining orders suggest weakening demand for equipment including servers and chips."
+    },
+    {
+        "name": "Active Regulations", "value": reg_val, "unit": "rules", "delta": reg_delta, "trend": reg_trend,
+        "tooltip": "28 new federal regulations related to semiconductors, AI, and export controls.<br>Source: Federal Register API.<br>More regulations = more compliance burden and potential supply chain disruptions."
+    },
+    {
+        "name": "Highest Severity", "value": high_val, "unit": "score max", "delta": high_delta, "trend": high_trend,
+        "tooltip": "Maximum severity score across all 12 sector-country pairs today.<br>Score of 56 = Power & Energy in China.<br>Above 70 = significant bottleneck. Above 85 = critical."
+    },
+    {
+        "name": "US-CN Divergence", "value": div_val, "unit": "severity gap", "delta": div_delta, "trend": div_trend,
+        "tooltip": "Absolute difference between average US and CN severity scores.<br>Low divergence (0-5) = similar constraint levels.<br>High divergence (15+) = asymmetric bottlenecks, potential trade implications."
+    },
 ]
 
 for row in [metrics[:3], metrics[3:]]:
@@ -302,11 +344,14 @@ for row in [metrics[:3], metrics[3:]]:
             trend_color = "#EF4444" if m["trend"] == "up" else "#10B981"
             arrow_icon = "↑" if m["trend"] == "up" else "↓"
             rhtml(f'''<div class="card" style="text-align:center; padding:15px;">
-                <div style="color:#6B7280;font-size:11px;text-transform:uppercase;">{m["name"]}</div>
-                <div style="font-size:36px;font-weight:800;color:#1E1B4B;">{m["value"]}</div>
-                <div style="color:#6B7280;font-size:12px;">{m["unit"]}</div>
-                <div style="color:{trend_color};font-size:13px;font-weight:600;">
-                    {arrow_icon} {m["delta"]}
+                <div class="tooltip-wrap">
+                    <div style="color:#6B7280;font-size:11px;text-transform:uppercase;">{m["name"]}</div>
+                    <div style="font-size:36px;font-weight:800;color:#1E1B4B;">{m["value"]}</div>
+                    <div style="color:#6B7280;font-size:12px;">{m["unit"]}</div>
+                    <div style="color:{trend_color};font-size:13px;font-weight:600;">
+                        {arrow_icon} {m["delta"]}
+                    </div>
+                    <div class="tooltip-text">{m["tooltip"]}</div>
                 </div>
             </div>''')
 st.markdown("<br>", unsafe_allow_html=True)

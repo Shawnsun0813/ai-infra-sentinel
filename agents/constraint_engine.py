@@ -58,6 +58,16 @@ For {sector} in {country}, consider these sector-specific factors:
 - Cooling & Infra: Liquid cooling adoption, water restrictions, equipment delivery
 - Policy: Export controls, subsidy programs, regulatory changes
 
+For top_signals, ONLY include quantitative data points with numbers.
+GOOD signals: 'PJM queue: 440 projects, avg wait 4.2yr', 
+              'Electricity price: 15.2 cents/kWh, +3% MoM',
+              'Federal Register: 28 new AI/semiconductor rules in Q1'
+BAD signals:  'Emerging leader in AI', 'Significant growth potential',
+              'Industry recognized by Forrester'
+If you cannot find specific numbers, use approximate ranges:
+              'Estimated capacity utilization: 80-90%',
+              'Lead times approximately 16-20 weeks'
+
 Output ONLY valid JSON:
 {schema}
 
