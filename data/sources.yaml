@@ -1,23 +1,14 @@
 sectors:
   GPU_CHIPS:
     US:
-      - name: "TSMC Quarterly Earnings Transcript"
-        url: "https://investor.tsmc.com"
-        type: transcript
-        refresh: quarterly
       - name: "SemiAnalysis CoWoS Tracker"
         url: "https://semianalysis.com"
         type: industry_report
         refresh: weekly
-      - name: "TechInsights Semiconductor"
-        url: "https://www.techinsights.com/blog"
-        type: industry_blog
-      - name: "AnandTech Semiconductor News"  
-        url: "https://www.tomshardware.com/tech-industry/semiconductors"
+      - name: "Tom's Hardware Semiconductor News"
+        url: "https://www.tomshardware.com/news"
         type: news
-      - name: "WikiChip"
-        url: "https://en.wikichip.org/wiki/WikiChip"
-        type: reference
+        refresh: daily
     CN:
       - name: "SMIC Announcements"
         url: "https://www.smics.com"
@@ -48,14 +39,6 @@ sectors:
         refresh: monthly
   POWER_ENERGY:
     US:
-      - name: "PJM Structured API"
-        url: "https://api.pjm.com/api/v1/"
-        type: api_data
-        refresh: daily
-      - name: "EIA Grid API"
-        url: "https://api.eia.gov/v2/electricity/"
-        type: api_data
-        refresh: daily
       - name: "PJM Interconnection Queue"
         url: "https://pjm.com/planning/services-requests/interconnection-queues.aspx"
         type: grid_data
@@ -69,16 +52,8 @@ sectors:
         url: "http://www.nea.gov.cn"
         type: government_policy
         refresh: monthly
-      - name: "Beijing Power Exchange"
-        url: "https://www.bjpx.com.cn" # TODO
-        type: market_data
-        refresh: daily
   CLOUD_COMPUTE:
     US:
-      - name: "FRED Tech CapEx API"
-        url: "https://api.stlouisfed.org/fred/series/observations"
-        type: api_data
-        refresh: daily
       - name: "SF Compute Pricing"
         url: "https://sfcompute.com" 
         type: market_data
@@ -125,10 +100,6 @@ sectors:
         url: "https://www.bis.doc.gov"
         type: government_policy
         refresh: weekly
-      - name: "Congress.gov AI Legislation"
-        url: "https://www.congress.gov"
-        type: government_policy
-        refresh: daily
     CN:
       - name: "State Council Announcements"
         url: "https://english.www.gov.cn"
