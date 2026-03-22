@@ -4,6 +4,9 @@ import yaml
 import os
 from pathlib import Path
 from core.models import Sector
+from core.logger import get_logger
+
+logger = get_logger('scout.us')
 from agents.structured_sources import (
     fetch_pjm_queue,
     fetch_eia_grid,
@@ -37,19 +40,19 @@ async def fetch_source(client: httpx.AsyncClient, source: dict) -> str | None:
         try:
             response = await client.get(url, headers=US_HEADERS, timeout=60.0, follow_redirects=True)
             response.raise_for_status()
-            print(f"[US Scout] Successfully fetched {name} ({response.status_code})")
+            logger.info(f"Successfully fetched {name} ({response.status_code})")
             return response.text
         except (ConnectionResetError, httpx.RemoteProtocolError) as e:
             if attempt < 2:
                 await asyncio.sleep(2)
                 continue
-            print(f"[US Scout] Failed after 3 retries: {name}: {e}")
+            logger.error(f"Failed after 3 retries: {name}: {e}")
             return None
         except httpx.HTTPError as e:
-            print(f"[US Scout] Error fetching {name}: {type(e).__name__} - {e}")
+            logger.error(f"Error fetching {name}: {type(e).__name__} - {e}")
             return None
         except Exception as e:
-            print(f"[US Scout] Unexpected error fetching {name}: {type(e).__name__} - {e}")
+            logger.error(f"Unexpected error fetching {name}: {type(e).__name__} - {e}")
             return None
 
 async def scan_sector(sector: str, sources: list[dict]) -> list[str]:
@@ -61,7 +64,7 @@ async def scan_sector(sector: str, sources: list[dict]) -> list[str]:
         valid_results = []
         for r in results:
             if isinstance(r, Exception):
-                print(f"[US Scout] Exception during gather: {r}")
+                logger.error(f"Exception during gather: {r}")
             elif r is not None:
                 valid_results.append(r)
                 
@@ -85,7 +88,7 @@ async def run_us_scout() -> dict[str, list[str]]:
     html_results = {}
     for name, result in zip(sector_names, results):
         if isinstance(result, Exception):
-            print(f"[US Scout] Sector {name} failed entirely: {result}")
+            logger.error(f"Sector {name} failed entirely: {result}")
             html_results[name] = []
         else:
             html_results[name] = result

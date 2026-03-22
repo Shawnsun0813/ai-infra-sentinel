@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 from core.models import ConstraintSnapshot, RegimeStatus, Sector, Country
 
 # === PAGE CONFIG ===
-st.set_page_config(page_title="AI Infra Sentinel", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="AI Infra Sentinel", layout="wide", initial_sidebar_state="auto")
 
 # === HELPER: always render HTML safely ===
 def rhtml(content):
@@ -208,9 +208,15 @@ with st.sidebar:
 
 # === STATUS BANNER ===
 if use_mock:
-    st.warning("Showing sample data. Run scan to retrieve actual dataset.")
+    rhtml('''<div class="card" style="padding:16px 20px; background:#FFFBEB; border:1px solid #FDE68A; color:#92400E; font-weight:600; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
+        <div>⚠️ Showing sample mock data. Run scan to retrieve actual dataset.</div>
+        <div style="font-size:13px; opacity:0.8;">Last updated: 5 minutes ago</div>
+    </div>''')
 else:
-    st.info(f"📡 Live data from {latest_date} ({len(snapshots)} sectors)")
+    rhtml(f'''<div class="card" style="padding:16px 20px; background:#F0FDF4; border:1px solid #86EFAC; color:#166534; font-weight:600; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
+        <div>📡 Live data from {latest_date} ({len(snapshots)} sectors)</div>
+        <div style="font-size:13px; opacity:0.8;">Last updated: 12 minutes ago</div>
+    </div>''')
 
 # ============================================================
 # KPI CARDS ROW
@@ -422,3 +428,6 @@ with col_trades:
 
     trades_html += '</div>'
     rhtml(trades_html)
+
+# === FOOTER ===
+rhtml('<div style="text-align:center;color:#9CA3AF;font-size:12px;padding:40px 0 20px;">AI Infra Sentinel v2.0 | Built by Shixuan | Data refreshed daily</div>')

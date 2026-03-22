@@ -8,6 +8,9 @@ from openai import AsyncOpenAI
 import json
 
 from core.models import ConstraintSnapshot, Sector, Country
+from core.logger import get_logger
+
+logger = get_logger('engine')
 
 EXTRACTION_PROMPT = """
 You are an infrastructure supply chain analyst.
@@ -88,16 +91,16 @@ async def extract_constraints(
         except (ValidationError, ValueError, json.JSONDecodeError) as e:
             attempt += 1
             if attempt > max_retries:
-                print(f"Failed to extract constraints for {sector.value} in {country.value}: {e}")
+                logger.error(f"Failed to extract constraints for {sector.value} in {country.value}: {e}")
                 raise ValueError(f"Constraint extraction failed after {max_retries} retries: {e}") from e
         except openai.RateLimitError as e:
             attempt += 1
             if attempt > max_retries:
-                print(f"API Rate limit giving up for {sector.value} in {country.value}: {e}")
+                logger.error(f"API Rate limit giving up for {sector.value} in {country.value}: {e}")
                 raise e
             await asyncio.sleep(3)  # Wait 3 seconds, retry up to 2 times
         except Exception as e:
-            print(f"API Error during extraction for {sector.value} in {country.value}: {e}")
+            logger.error(f"API Error during extraction for {sector.value} in {country.value}: {e}")
             raise e
 
 async def process_all_sectors(
