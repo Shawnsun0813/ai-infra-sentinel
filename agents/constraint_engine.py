@@ -70,14 +70,13 @@ async def extract_constraints(
     """Uses LLM to extract constraints from raw text."""
     valid_texts = [t for t in raw_texts if t and isinstance(t, str)]
     
-    # Clean each text source
-    cleaned_texts = [clean_html(t) for t in valid_texts]
-    # Remove empty strings after cleaning
-    cleaned_texts = [t for t in cleaned_texts if len(t) > 50]
-    # Combine and truncate
-    combined_text = "\n---\n".join(cleaned_texts)[:3000]
+    cleaned_texts = []
+    for t in valid_texts:
+        cleaned = clean_html(t)
+        if len(cleaned) > 100:  # skip very short/empty results
+            cleaned_texts.append(cleaned)
     
-    if len(combined_text.strip()) < 50:
+    if not cleaned_texts:
         return ConstraintSnapshot(
             date=scan_date,
             country=country,
@@ -87,6 +86,12 @@ async def extract_constraints(
             reasoning="No substantive data available for this sector.",
             source_urls=[]
         )
+    
+    # Take first 1500 chars from each source, up to 4500 total
+    combined_parts = []
+    for ct in cleaned_texts[:3]:
+        combined_parts.append(ct[:1500])
+    combined_text = "\n---\n".join(combined_parts)
         
     schema_json = json.dumps(ConstraintSnapshot.model_json_schema(), indent=2)
     

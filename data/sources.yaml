@@ -9,6 +9,15 @@ sectors:
         url: "https://semianalysis.com"
         type: industry_report
         refresh: weekly
+      - name: "TechInsights Semiconductor"
+        url: "https://www.techinsights.com/blog"
+        type: industry_blog
+      - name: "AnandTech Semiconductor News"  
+        url: "https://www.tomshardware.com/tech-industry/semiconductors"
+        type: news
+      - name: "WikiChip"
+        url: "https://en.wikichip.org/wiki/WikiChip"
+        type: reference
     CN:
       - name: "SMIC Announcements"
         url: "https://www.smics.com"

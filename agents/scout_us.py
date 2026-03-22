@@ -30,7 +30,7 @@ US_HEADERS = {
 }
 
 async def fetch_source(client: httpx.AsyncClient, source: dict) -> str | None:
-    """Fetch a single source URL with a 60s timeout."""
+    """Fetch a single source URL with a 30s timeout."""
     url = source.get("url")
     name = source.get("name")
     if not url:
@@ -38,10 +38,22 @@ async def fetch_source(client: httpx.AsyncClient, source: dict) -> str | None:
         
     for attempt in range(3):
         try:
-            response = await client.get(url, headers=US_HEADERS, timeout=60.0, follow_redirects=True)
+            response = await client.get(
+                url, 
+                timeout=30.0,
+                follow_redirects=True,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/json",
+                    "Accept-Encoding": "identity"  # Disable compression to avoid binary
+                }
+            )
             response.raise_for_status()
             logger.info(f"Successfully fetched {name} ({response.status_code})")
-            return response.text
+            try:
+                return response.text
+            except Exception:
+                return response.content.decode('utf-8', errors='ignore')
         except (ConnectionResetError, httpx.RemoteProtocolError) as e:
             if attempt < 2:
                 await asyncio.sleep(2)

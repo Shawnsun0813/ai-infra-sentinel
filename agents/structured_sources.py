@@ -25,14 +25,14 @@ async def fetch_pjm_queue(client: httpx.AsyncClient) -> dict:
 
 async def fetch_eia_grid(client: httpx.AsyncClient, api_key: str) -> dict:
     '''Fetch grid capacity and generation data from EIA'''
-    url = 'https://api.eia.gov/v2/electricity/rto/fuel-type-data/data/'
+    url = 'https://api.eia.gov/v2/electricity/retail-sales/data/'
     params = {
         'api_key': api_key,
         'frequency': 'monthly',
-        'data[0]': 'value',
+        'data[0]': 'price',
         'sort[0][column]': 'period',
         'sort[0][direction]': 'desc',
-        'length': 12
+        'length': 5
     }
     try:
         resp = await client.get(url, params=params, timeout=30)
@@ -47,15 +47,18 @@ async def fetch_eia_grid(client: httpx.AsyncClient, api_key: str) -> dict:
 async def fetch_fred_tech_capex(client: httpx.AsyncClient, api_key: str) -> dict:
     '''Fetch semiconductor shipments and tech capex indicators'''
     series = {
-        'semiconductor_shipments': 'MNFCTRSSMSA',
-        'tech_equipment_orders': 'AMDMNO',
+        'durable_goods_orders': 'DGORDER',
+        'industrial_production': 'INDPRO',
     }
     results = {}
     for name, series_id in series.items():
         url = 'https://api.stlouisfed.org/fred/series/observations'
         params = {
-            'api_key': api_key, 'series_id': series_id,
-            'sort_order': 'desc', 'limit': 6, 'file_type': 'json'
+            'api_key': api_key,
+            'series_id': series_id,
+            'sort_order': 'desc',
+            'limit': 6,
+            'file_type': 'json'
         }
         try:
             resp = await client.get(url, params=params, timeout=30)
