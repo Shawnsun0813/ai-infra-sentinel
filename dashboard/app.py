@@ -417,7 +417,7 @@ Signals:
     rhtml(table_html)
 
 with col_right:
-    st.markdown("<div class='card-title' style='margin-bottom: 12px; color:#6B7280; font-size:13px; font-weight:600; text-transform:uppercase;'>SECTOR COMPARISON</div>", unsafe_allow_html=True)
+    rhtml('<div class="card"><div class="card-title">SECTOR COMPARISON</div>')
     fig_bar = go.Figure()
     sectors_list = [SECTOR_LABELS.get(s.value, s.value) for s in Sector]
     us_vals, cn_vals = [], []
@@ -430,9 +430,11 @@ with col_right:
     fig_bar.add_trace(go.Bar(name='US', x=sectors_list, y=us_vals, marker_color='#7C3AED'))
     fig_bar.add_trace(go.Bar(name='CN', x=sectors_list, y=cn_vals, marker_color='#F59E0B'))
     fig_bar.update_layout(barmode='group', template='plotly_white', height=300,
-                      margin=dict(l=0, r=0, t=10, b=0),
+                      margin=dict(l=20, r=20, t=30, b=80),
+                      xaxis_tickangle=-45,
                       legend=dict(orientation='h', y=-0.2))
     st.plotly_chart(fig_bar, use_container_width=True)
+    rhtml('</div>')
 
 # ============================================================
 # 7-DAY TREND CHART + TRADE IDEAS
@@ -440,7 +442,7 @@ with col_right:
 col_chart, col_trades = st.columns([6, 4])
 
 with col_chart:
-    st.markdown("<div class='card-title' style='margin-bottom: 12px; color:#6B7280; font-size:13px; font-weight:600; text-transform:uppercase;'>7-DAY SEVERITY TREND</div>", unsafe_allow_html=True)
+    rhtml('<div class="card"><div class="card-title">7-DAY SEVERITY TREND</div>')
     view = st.radio("View", ["US", "CN", "Both"], horizontal=True, label_visibility="collapsed")
     if history and len(history) > 0:
         fig = go.Figure()
@@ -470,6 +472,7 @@ with col_chart:
             fig.update_layout(
                 template="plotly_white", height=320,
                 margin=dict(l=20, r=20, t=10, b=10),
+                xaxis=dict(tickformat="%b %d", dtick="D1"),
                 legend=dict(orientation="h", yanchor="top", y=-0.2, xanchor="center", x=0.5),
                 yaxis_title="Severity"
             )
@@ -478,6 +481,7 @@ with col_chart:
             st.caption("📈 No trend data yet.")
     else:
         st.caption("📈 No trend data yet.")
+    rhtml('</div>')
 
 with col_trades:
     trade_list = [
@@ -494,6 +498,7 @@ with col_trades:
         d = t.get("direction", "LONG")
         ticker = html_module.escape(str(t.get("ticker", "")))
         rationale = html_module.escape(str(t.get("rationale", "")))
+        rationale_short = rationale[:60] + "..." if len(rationale) > 60 else rationale
         conv = t.get("conviction", "MED")
 
         pill_bg = "#FEE2E2" if d == "SHORT" else "#DCFCE7"
@@ -510,16 +515,17 @@ with col_trades:
 
         trades_html += f'''<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;{border_bottom}">
             <span style="display:inline-block;min-width:70px;padding:6px 14px;border-radius:8px;
-                font-weight:700;font-size:13px;text-align:center;white-space:nowrap;
+                font-weight:700;font-size:13px;text-align:center;
                 background:{pill_bg};color:{pill_color};">{d}</span>
-            <div style="flex:1;margin-left:16px;">
-                <div style="font-size:18px;font-weight:700;color:#1E1B4B;">{ticker}</div>
-                <div style="font-size:13px;color:#6B7280;margin-top:2px;">{rationale}</div>
+            <div style="flex:1;margin-left:16px;min-width:0;display:flex;align-items:center;">
+                <span style="font-size:18px;font-weight:700;color:#1E1B4B;margin-right:8px;">{ticker}</span>
+                <span style="font-size:12px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">{rationale_short}</span>
             </div>
             <span style="padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;
                 background:{conv_bg};color:{conv_color};">{conv}</span>
         </div>'''
 
+    trades_html += '<div style="font-size:10px;color:#9CA3AF;margin-top:16px;padding-top:12px;border-top:1px solid #EDE9FE;line-height:1.4;">⚠️ For informational purposes only. Not investment advice. AI-generated signals may contain errors. Always conduct independent research before making investment decisions.</div>'
     trades_html += '</div>'
     rhtml(trades_html)
 
@@ -541,4 +547,8 @@ with st.expander("📝 AI Analysis (click to expand)"):
 
 # === FOOTER ===
 st.markdown("<br>", unsafe_allow_html=True)
-rhtml('<div style="text-align:center;color:#9CA3AF;font-size:12px;padding:20px 0 20px;">AI Infra Sentinel v2.0 | Built by Shixuan | Data refreshed daily</div>')
+rhtml('<div style="text-align:center;color:#9CA3AF;font-size:11px;padding:40px 0 20px;line-height:1.6;">'
+      'AI Infra Sentinel v2.0 · Built with GPT-4o + Multi-Agent Architecture<br>'
+      'Data sources: EIA, FRED, PJM, Federal Register, FERC, BIS, MIIT, SMIC and more<br>'
+      '© 2026 · For research purposes only'
+      '</div>')
