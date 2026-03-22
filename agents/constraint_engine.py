@@ -6,9 +6,24 @@ from datetime import date
 from pydantic import ValidationError
 from openai import AsyncOpenAI
 import json
+import re
 
 from core.models import ConstraintSnapshot, Sector, Country
 from core.logger import get_logger
+
+def clean_html(text: str) -> str:
+    """Strip HTML tags, scripts, styles, and excess whitespace"""
+    # Remove script and style blocks entirely
+    text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL | re.IGNORECASE)
+    # Remove all HTML tags
+    text = re.sub(r'<[^>]+>', ' ', text)
+    # Remove HTML entities
+    text = re.sub(r'&[a-zA-Z]+;', ' ', text)
+    text = re.sub(r'&#\d+;', ' ', text)
+    # Collapse whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 logger = get_logger('engine')
 
@@ -54,9 +69,15 @@ async def extract_constraints(
 ) -> ConstraintSnapshot:
     """Uses LLM to extract constraints from raw text."""
     valid_texts = [t for t in raw_texts if t and isinstance(t, str)]
-    combined_text = "\n\n---\n\n".join(valid_texts)[:2000]
     
-    if not combined_text or len(combined_text) < 50:
+    # Clean each text source
+    cleaned_texts = [clean_html(t) for t in valid_texts]
+    # Remove empty strings after cleaning
+    cleaned_texts = [t for t in cleaned_texts if len(t) > 50]
+    # Combine and truncate
+    combined_text = "\n---\n".join(cleaned_texts)[:3000]
+    
+    if len(combined_text.strip()) < 50:
         return ConstraintSnapshot(
             date=scan_date,
             country=country,
