@@ -25,22 +25,34 @@ async def fetch_pjm_queue(client: httpx.AsyncClient) -> dict:
 
 async def fetch_eia_grid(client: httpx.AsyncClient, api_key: str) -> dict:
     '''Fetch grid capacity and generation data from EIA'''
-    url = 'https://api.eia.gov/v2/electricity/retail-sales/data/'
-    params = {
-        'api_key': api_key,
-        'frequency': 'monthly',
-        'data[0]': 'price',
-        'sort[0][column]': 'period',
-        'sort[0][direction]': 'desc',
-        'length': 5
-    }
     try:
-        resp = await client.get(url, params=params, timeout=30)
-        data = resp.json()
-        return {
-            'grid_generation_data': data.get('response', {}).get('data', [])[:5],
-            'source': 'EIA API v2 (official)'
-        }
+        resp = await client.get(
+            'https://api.eia.gov/v2/electricity/retail-sales/data/',
+            params={
+                'api_key': api_key,
+                'frequency': 'monthly',
+                'data[0]': 'price',
+                'sort[0][column]': 'period',
+                'sort[0][direction]': 'desc',
+                'length': 10
+            },
+            timeout=30
+        )
+        if resp.status_code == 200:
+            data = resp.json().get('response', {}).get('data', [])
+            # Summarize key states
+            summary = {}
+            for row in data[:20]:
+                state = row.get('stateDescription', '')
+                price = row.get('price', '')
+                if state and price:
+                    summary[state] = f"{price} cents/kWh"
+            return {
+                'electricity_prices': summary,
+                'period': data[0].get('period', '') if data else '',
+                'source': 'EIA API v2 - Retail Electricity Prices (official)'
+            }
+        return {'error': f'HTTP {resp.status_code}', 'source': 'EIA'}
     except Exception as e:
         return {'error': str(e), 'source': 'EIA'}
 
@@ -52,20 +64,24 @@ async def fetch_fred_tech_capex(client: httpx.AsyncClient, api_key: str) -> dict
     }
     results = {}
     for name, series_id in series.items():
-        url = 'https://api.stlouisfed.org/fred/series/observations'
-        params = {
-            'api_key': api_key,
-            'series_id': series_id,
-            'sort_order': 'desc',
-            'limit': 6,
-            'file_type': 'json'
-        }
         try:
-            resp = await client.get(url, params=params, timeout=30)
-            data = resp.json()
-            results[name] = data.get('observations', [])[:3]
-        except: pass
-    results['source'] = 'FRED API (Federal Reserve)'
+            resp = await client.get(
+                'https://api.stlouisfed.org/fred/series/observations',
+                params={
+                    'api_key': api_key,
+                    'series_id': series_id,
+                    'sort_order': 'desc',
+                    'limit': 6,
+                    'file_type': 'json'
+                },
+                timeout=30
+            )
+            if resp.status_code == 200:
+                obs = resp.json().get('observations', [])[:3]
+                results[name] = [{'date': o['date'], 'value': o['value']} for o in obs]
+        except:
+            pass
+    results['source'] = 'FRED API (Federal Reserve Economic Data)'
     return results
 
 async def fetch_federal_register(client: httpx.AsyncClient) -> dict:
@@ -91,5 +107,20 @@ async def fetch_federal_register(client: httpx.AsyncClient) -> dict:
         return {'error': str(e), 'source': 'Federal Register'}
 
 def structured_to_text(data: dict) -> str:
-    '''Convert structured API data to text for LLM analysis'''
-    return json.dumps(data, indent=2, default=str)
+    '''Convert API response to LLM-friendly text summary'''
+    lines = [f"=== VERIFIED DATA SOURCE: {data.get('source', 'API')} ==="]
+    for key, value in data.items():
+        if key == 'source':
+            continue
+        if isinstance(value, dict):
+            for k, v in value.items():
+                lines.append(f"  {k}: {v}")
+        elif isinstance(value, list):
+            for item in value[:5]:
+                if isinstance(item, dict):
+                    lines.append(f"  {', '.join(f'{k}={v}' for k,v in item.items())}")
+                else:
+                    lines.append(f"  {item}")
+        else:
+            lines.append(f"  {key}: {value}")
+    return "\n".join(lines)

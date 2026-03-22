@@ -61,6 +61,15 @@ For {sector} in {country}, consider these sector-specific factors:
 Output ONLY valid JSON:
 {schema}
 
+CRITICAL: If the input contains sections marked '=== VERIFIED DATA SOURCE ===' 
+these are from official government APIs (EIA, FRED, Federal Register). 
+Trust these numbers completely and BASE your score primarily on them.
+For example:
+- Electricity prices above 15 cents/kWh in major states = elevated power costs (score 55+)
+- Durable goods orders declining month-over-month = weakening demand signal (score 40-50)
+- Federal Register showing 20+ new regulations = active regulatory pressure (score 50+)
+- PJM queue with 400+ projects = significant grid bottleneck (score 70+)
+
 REMEMBER: Score of exactly 30 is NOT ALLOWED. Differentiate your scores."""
 
 _client = None
@@ -96,10 +105,21 @@ async def extract_constraints(
             source_urls=[]
         )
     
-    # Take first 1500 chars from each source, up to 4500 total
+    structured = [t for t in cleaned_texts if 'VERIFIED DATA SOURCE' in t]
+    unstructured = [t for t in cleaned_texts if 'VERIFIED DATA SOURCE' not in t]
+    
     combined_parts = []
-    for ct in cleaned_texts[:3]:
-        combined_parts.append(ct[:1500])
+    # Structured data gets 2000 chars
+    for s in structured:
+        combined_parts.append(s[:2000])
+    # Unstructured fills remaining up to 4000 total
+    remaining = 4000 - sum(len(p) for p in combined_parts)
+    for u in unstructured:
+        if remaining <= 0:
+            break
+        combined_parts.append(u[:remaining])
+        remaining -= len(u[:remaining])
+    
     combined_text = "\n---\n".join(combined_parts)
         
     schema_json = json.dumps(ConstraintSnapshot.model_json_schema(), indent=2)

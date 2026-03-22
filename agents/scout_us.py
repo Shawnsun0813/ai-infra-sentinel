@@ -116,11 +116,10 @@ async def run_us_scout() -> dict[str, list[str]]:
         structured['CLOUD_COMPUTE'] = await fetch_fred_tech_capex(client, fred_key)
         structured['POLICY'] = await fetch_federal_register(client)
 
-        import json
         # Merge: prepend structured data text to each sector's raw texts
         for sector, data in structured.items():
             sector_key = sector.split('_EIA')[0]  # normalize key
-            text = f'[STRUCTURED DATA SOURCE]\n{json.dumps(data, indent=2, default=str)}'
+            text = structured_to_text(data)
             if sector_key in html_results:
                 html_results[sector_key].insert(0, text)  # priority: structured first
             else:
