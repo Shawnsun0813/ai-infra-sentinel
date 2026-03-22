@@ -79,13 +79,12 @@ async def extract_constraints(
                 raise ValueError("Empty response from LLM")
                 
             data = json.loads(raw_json)
-            # Ensure the required kwargs are present if LLM missed them
-            data["date"] = data.get("date", str(scan_date))
+            # FORCE the date to scan_date, never trust LLM's date
+            data["date"] = str(scan_date)
             data["country"] = country.value
             data["sector"] = sector.value
             
-            json_str = json.dumps(data)
-            snapshot = ConstraintSnapshot.model_validate_json(json_str)
+            snapshot = ConstraintSnapshot.model_validate(data)
             return snapshot
             
         except (ValidationError, ValueError, json.JSONDecodeError) as e:
