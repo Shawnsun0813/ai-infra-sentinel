@@ -14,7 +14,8 @@ def get_client() -> AsyncOpenAI:
 MACRO_PROMPT = """
 You are a senior macro strategist.
 Analyze the following regime status, bottleneck sector, current constraints, and 7-day deltas.
-Generate 3-5 bilingual bullet points (English primary, Chinese key terms in parentheses) synthesizing the macro situation.
+Generate 3-5 bullet points synthesizing the macro situation.
+Write ALL output in English only. Do NOT include any Chinese translations, pinyin, or parenthetical translations. Use clean sector names like 'GPU/Chips', 'Data Centers', 'Power & Energy', 'Cloud/Compute', 'Cooling & Infra', 'Policy' — not the enum values like 'GPU_CHIPS' or 'COOLING_INFRA'.
 Output ONLY a JSON array of strings. No markdown formatting outside of the JSON array.
 """
 

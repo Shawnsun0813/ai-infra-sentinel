@@ -17,6 +17,8 @@ Analyze the current macro regime, bottleneck sector, deltas, and constraint snap
 Provide 3-5 thematic trade ideas that profit from these constraints and shifts.
 Each trade idea must have: direction (LONG or SHORT), ticker, rationale, conviction (HIGH, MED, or LOW), and horizon.
 
+Write ALL output in English only. Do NOT include any Chinese translations, pinyin, or parenthetical translations. Use clean sector names like 'GPU/Chips', 'Data Centers', 'Power & Energy', 'Cloud/Compute', 'Cooling & Infra', 'Policy' — not the enum values like 'GPU_CHIPS' or 'COOLING_INFRA'.
+
 Output MUST be a JSON object containing a list of trade ideas under the key "ideas", matching this structure:
 {
   "ideas": [
