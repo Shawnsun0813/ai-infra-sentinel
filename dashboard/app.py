@@ -183,13 +183,13 @@ with st.sidebar:
     st.divider()
     st.markdown(f"**Last scan:** {latest_date}")
     st.markdown(f"**Regime:** {regime.value.replace('_', ' ')}")
-    with st.expander("📡 Data Sources (18 OK, 6 Failed)"):
+    with st.expander("📡 Data Sources (21 OK, 1 Failed)"):
         sources = [
             ("FERC eLibrary", True),
-            ("PJM Queue (HTML)", True),
+            ("PJM Interconnection Queue", True),
             ("EIA Grid Monitor", True),
             ("Federal Register API", True),
-            ("SemiAnalysis", True),
+            ("SemiAnalysis CoWoS Tracker", True),
             ("Datacenter Dynamics", True),
             ("BIS Export Controls", True),
             ("SF Compute Pricing", True),
@@ -203,11 +203,9 @@ with st.sidebar:
             ("Alibaba Cloud", True),
             ("China Bidding", True),
             ("Sugon Liquid Cooling", True),
-            ("TSMC Earnings", False),
-            ("Congress.gov", False),
-            ("EIA API", False),
-            ("FRED API", False),
-            ("PJM API", False),
+            ("Tom's Hardware Semiconductor News", True),
+            ("EIA API", True),
+            ("FRED API", True),
             ("Beijing Power Exchange", False),
         ]
         sidebar_html = []

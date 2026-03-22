@@ -68,6 +68,12 @@ If you cannot find specific numbers, use approximate ranges:
               'Estimated capacity utilization: 80-90%',
               'Lead times approximately 16-20 weeks'
 
+LANGUAGE RULE: ALL output must be in English. 
+If the raw data is in Chinese, translate the key findings to English.
+Example: Instead of '近半年招标项目：6765 个', write 'Bidding projects in past 6 months: 6,765'
+Instead of '评标结果公示数量：20+', write 'Bid evaluation results published: 20+'
+Never output Chinese characters in severity_score, top_signals, or reasoning.
+
 Output ONLY valid JSON:
 {schema}
 
