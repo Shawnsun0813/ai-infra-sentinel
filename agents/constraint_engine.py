@@ -12,20 +12,31 @@ from core.logger import get_logger
 
 logger = get_logger('engine')
 
-EXTRACTION_PROMPT = """
-You are an infrastructure supply chain analyst.
-Given raw text about the {sector} sector in {country}, extract the key constraints.
+EXTRACTION_PROMPT = """You are an AI infrastructure supply chain analyst.
+Analyze the following raw data about the {sector} sector in {country}.
 
-Your output must be a valid JSON object matching this schema:
+SCORING RUBRIC (follow strictly):
+- 0-20: No constraints detected. Supply chain operating normally.
+- 21-40: Minor delays or concerns. Lead times within normal range.
+- 41-60: Moderate constraints. Some delays, capacity tightening, or policy uncertainty.
+- 61-80: Significant constraints. Extended lead times, capacity shortages, or regulatory hurdles.
+- 81-100: Critical bottleneck. Severe shortages, multi-year delays, or major policy disruptions.
+
+IMPORTANT RULES:
+- DO NOT default to 75. Each sector should have a DIFFERENT score based on actual evidence.
+- If the raw data is mostly generic HTML with no specific constraint signals, score 30-40.
+- If you find specific numbers (lead times, utilization rates, queue lengths), cite them.
+- A score of 0 means you found ZERO relevant data — only use if raw text is completely empty.
+- Scores should vary: a healthy sector might be 25, a constrained one 80. Not everything is 75.
+
+Extract:
+1. severity_score (0-100): Follow the rubric above
+2. top_signals: Up to 3 specific data points with numbers (e.g., "PJM queue: 2,600 projects, 4.2yr avg wait")
+3. reasoning: 2-3 sentences explaining WHY you gave this specific score, citing evidence from the data
+4. source_urls: Any URLs found in the raw text
+
+Respond ONLY in valid JSON matching this schema:
 {schema}
-
-Guidelines:
-- severity_score: An integer from 0-100 indicating how constrained this sector is (100 = completely blocked/max constraint).
-- top_signals: Max 3 key data points supporting the score (e.g., lead times, utilization %, delays).
-- reasoning: 2-3 sentence explanation of the score.
-- source_urls: Any URLs found in the raw text supporting the claims.
-
-Extract ONLY valid JSON and no markdown formatting or extra text.
 """
 
 _client = None
@@ -44,6 +55,17 @@ async def extract_constraints(
     """Uses LLM to extract constraints from raw text."""
     valid_texts = [t for t in raw_texts if t and isinstance(t, str)]
     combined_text = "\n\n---\n\n".join(valid_texts)[:2000]
+    
+    if not combined_text or len(combined_text) < 50:
+        return ConstraintSnapshot(
+            date=scan_date,
+            country=country,
+            sector=sector,
+            severity_score=30,
+            top_signals=["Insufficient data"],
+            reasoning="No substantive data available for this sector.",
+            source_urls=[]
+        )
         
     schema_json = json.dumps(ConstraintSnapshot.model_json_schema(), indent=2)
     
